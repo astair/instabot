@@ -14,7 +14,7 @@ def interface():
 
     parser.add_argument("COMMAND",
                         type=str,
-                        choices=["like", "like_back", "comment", "comment_back", "follow"],
+                        choices=["like", "like_back", "follow", "unfollow"],
                         metavar="<COMMAND>",
                         help="A command for the Instabot.")
 
@@ -191,3 +191,20 @@ if __name__ == "__main__":
                         logging.info(f"Commenting '{comment}'")
                         API.comment(media_id, comment)
                     time.sleep(wait)
+
+    if args.COMMAND == "follow":
+        if user:
+            logging.info(f"Searching for user {user}")
+            response = API.searchUsername(user)
+            user_id = API.LastJson["user"]["pk"]
+
+            logging.info(f"Getting first {n_user} followers")
+            response = API.getUserFollowers(user_id)
+            followers = API.LastJson["users"][:n_user]
+
+            for fer in followers:
+                username = fer["username"]
+                user_id = fer["pk"]
+
+                logging.info(f"Following {username}")
+                API.follow(user_id)
