@@ -10,6 +10,7 @@ settings:
     n_pics: 5
     n_user: 30
     comment: True
+    wait: 5
 
 comments:
     /Users/Jonas/Documents/Projekte/instagram/comments.txt
