@@ -2,15 +2,15 @@ account:
     username: bliblablubb_111
     password: bliblablubb
 
-
 settings:
     hashtag: celeryjuice
     user: timsfits
     location: bempflingen
     n_pics: 5
-    n_user: 30
+    n_user: 50
     comment: True
-    wait: 5
+    wait: 1
+    follow_days: 3
 
 comments:
     /Users/Jonas/Documents/Projekte/instagram/comments.txt

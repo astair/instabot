@@ -42,15 +42,15 @@ if __name__ == "__main__":
 
 
     # Load config
-    with open(args.CONFIG, "r") as stream:
+    with open(args.CONFIG, "r") as f:
         try:
-            config = yaml.load(stream)
+            config = yaml.load(f)
         except yaml.YAMLError as err:
             print(err)
 
     logging.info("Logging into Instagram.")
-    username = config["account"]["username"]
-    API = InstagramAPI(username, config["account"]["password"])
+    acc_username = config["account"]["username"]
+    API = InstagramAPI(acc_username, config["account"]["password"])
     API.login()
 
     # Some common parameters
@@ -61,6 +61,7 @@ if __name__ == "__main__":
     location = config["settings"]["location"]
     wait = config["settings"]["wait"]
     comment = config["settings"]["comment"]
+    follow_days = config["settings"]["follow_days"]
 
     comments = open(config["comments"], "rt").readlines()
     comments = [c.strip() for c in comments]
@@ -145,16 +146,16 @@ if __name__ == "__main__":
 
     if args.COMMAND == "like_back":
         if not user:
-            user = username
+            username = acc_username
 
-        response = API.searchUsername(user)
+        response = API.searchUsername(username)
         user_id = API.LastJson["user"]["pk"]
 
         logging.info("Listing followers")
         API.getUserFollowings(user_id)
         my_followers = [user["pk"] for user in API.LastJson["users"]]
 
-        API.searchUsername(user)
+        API.searchUsername(username)
         user_id = API.LastJson["user"]["pk"]
 
         logging.info(f"Getting first {n_pics} posts")
@@ -193,6 +194,21 @@ if __name__ == "__main__":
                     time.sleep(wait)
 
     if args.COMMAND == "follow":
+
+        try:
+            with open("logs/follow.log", "r") as f:
+                follow_log = yaml.load(f)
+        except FileNotFoundError as err:
+            print(err)
+            follow_log = []
+        except yaml.YAMLError as err:
+            print(err)
+            follow_log = []
+        if not follow_log:
+            follow_log = []
+
+        now = datetime.now().strftime("%Y-%m-%d_%H:%M")
+
         if user:
             logging.info(f"Searching for user {user}")
             response = API.searchUsername(user)
@@ -207,4 +223,30 @@ if __name__ == "__main__":
                 user_id = fer["pk"]
 
                 logging.info(f"Following {username}")
-                API.follow(user_id)
+                response = API.follow(user_id)
+                if response:
+                    follow_log.append((user_id, username, now))
+                time.sleep(wait)
+
+            with open("logs/follow.log", "w") as fout:
+                yaml.dump(follow_log, fout)
+
+    if args.COMMAND == "unfollow":
+
+        with open("logs/follow.log", "r") as f:
+            follow_log = yaml.load(f)
+
+        now = datetime.now()
+
+        new_follow_log = []
+        for f in follow_log:
+            delta = now - datetime.strptime(f[2], "%Y-%m-%d_%H:%M")
+            if delta.days > follow_days:
+                logging.info(f"Unfollowing {f[1]}")
+                API.unfollow(f[0])
+                time.sleep(wait)
+            else:
+                new_follow_log.append(f)
+
+        with open("logs/follow.log", "w") as fout:
+            yaml.dump(new_follow_log, fout)
