@@ -28,6 +28,13 @@ def interface():
     args = parser.parse_args()
     return args
 
+    def load_liked_pics():
+        try:
+            with open("logs/likes.log", "r") as f:
+                follow_log = yaml.load(f)
+        except FileNotFoundError as err:
+            follow_log = []
+        
 
 if __name__ == "__main__":
     args = interface()
@@ -40,13 +47,22 @@ if __name__ == "__main__":
             logging.StreamHandler()
     ])
 
-
     # Load config
     with open(args.CONFIG, "r", encoding="utf8") as f:
         try:
             config = yaml.load(f)
         except yaml.YAMLError as err:
             print(err)
+
+    # Load comments
+    comment = config["settings"]["comment"]
+    try:
+        with open(config["comments"], "rt", encoding="utf8") as f:
+            comments = f.readlines()
+        comments = [c.strip() for c in comments]
+    except FileNotFoundError:
+        logging.warning(f"{config["comments"]} was not found. Continuing        without comments.")
+        comment = False
 
     logging.info("Logging into Instagram.")
     acc_username = config["account"]["username"]
@@ -63,11 +79,7 @@ if __name__ == "__main__":
     location = config["settings"]["location"]
     min_wait = config["settings"]["min_wait"]
     max_wait = config["settings"]["max_wait"]
-    comment = config["settings"]["comment"]
     follow_days = config["settings"]["follow_days"]
-
-    comments = open(config["comments"], "rt", encoding="utf8").readlines()
-    comments = [c.strip() for c in comments]
 
     if args.COMMAND == "like":
         if user:

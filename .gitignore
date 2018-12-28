@@ -6,3 +6,4 @@ logs*
 *egg-info
 dist
 __init__.py
+build
