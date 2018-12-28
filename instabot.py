@@ -66,7 +66,7 @@ if __name__ == "__main__":
     comment = config["settings"]["comment"]
     follow_days = config["settings"]["follow_days"]
 
-    comments = open(config["comments"], "rt").readlines()
+    comments = open(config["comments"], "rt", encoding="utf8").readlines()
     comments = [c.strip() for c in comments]
 
     if args.COMMAND == "like":
