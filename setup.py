@@ -30,7 +30,9 @@ try:
 except FileNotFoundError:
     long_description = DESCRIPTION
 
-os.makedir(os.path.join(HERE, "logs/"))
+logs_dir = os.path.join(HERE, "logs/")
+if not os.path.exists(logs_dir):
+    os.makedir(logs_dir)
 
 setup(
     name = NAME,
