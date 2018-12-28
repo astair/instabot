@@ -6,7 +6,7 @@ import random
 import logging
 import argparse
 from datetime import datetime
-from InstagramAPI import InstagramAPI
+from instabot.api.InstagramAPI import InstagramAPI
 
 # FUNC
 def interface():
@@ -50,7 +50,9 @@ if __name__ == "__main__":
 
     logging.info("Logging into Instagram.")
     acc_username = config["account"]["username"]
+    device = config["account"]["device"]
     API = InstagramAPI(acc_username, config["account"]["password"])
+    API.setDevice(device)
     API.login()
 
     # Some common parameters
@@ -59,7 +61,8 @@ if __name__ == "__main__":
     hashtag = config["settings"]["hashtag"]
     user = config["settings"]["user"]
     location = config["settings"]["location"]
-    wait = config["settings"]["wait"]
+    min_wait = config["settings"]["min_wait"]
+    max_wait = config["settings"]["max_wait"]
     comment = config["settings"]["comment"]
     follow_days = config["settings"]["follow_days"]
 
@@ -98,7 +101,7 @@ if __name__ == "__main__":
                         comment = random.sample(comments, 1)[0]
                         logging.info(f"Commenting '{comment}'")
                         API.comment(media_id, comment)
-                    time.sleep(wait)
+                    time.sleep(random.randint(min_wait, max_wait))
 
         if hashtag:
             if hashtag.startswith("#"):
@@ -118,7 +121,7 @@ if __name__ == "__main__":
                     comment = random.sample(comments, 1)[0]
                     logging.info(f"Commenting '{comment}'")
                     API.comment(media_id, comment)
-                time.sleep(wait)
+                time.sleep(random.randint(min_wait, max_wait))
 
         if location:
 
@@ -142,13 +145,13 @@ if __name__ == "__main__":
                     comment = random.sample(comments, 1)[0]
                     logging.info(f"Commenting '{comment}'")
                     API.comment(media_id, comment)
-                time.sleep(wait)
+                time.sleep(random.randint(min_wait, max_wait))
 
     if args.COMMAND == "like_back":
         if not user:
-            username = acc_username
+            user = acc_username
 
-        response = API.searchUsername(username)
+        response = API.searchUsername(user)
         user_id = API.LastJson["user"]["pk"]
 
         logging.info("Listing followers")
@@ -191,7 +194,7 @@ if __name__ == "__main__":
                         comment = random.sample(comments, 1)[0]
                         logging.info(f"Commenting '{comment}'")
                         API.comment(media_id, comment)
-                    time.sleep(wait)
+                    time.sleep(random.randint(min_wait, max_wait))
 
     if args.COMMAND == "follow":
 
@@ -226,7 +229,7 @@ if __name__ == "__main__":
                 response = API.follow(user_id)
                 if response:
                     follow_log.append((user_id, username, now))
-                time.sleep(wait)
+                time.sleep(random.randint(min_wait, max_wait))
 
             with open("logs/follow.log", "w") as fout:
                 yaml.dump(follow_log, fout)
@@ -244,7 +247,7 @@ if __name__ == "__main__":
             if delta.days > follow_days:
                 logging.info(f"Unfollowing {f[1]}")
                 API.unfollow(f[0])
-                time.sleep(wait)
+                time.sleep(random.randint(min_wait, max_wait))
             else:
                 new_follow_log.append(f)
 

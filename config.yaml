@@ -1,16 +1,18 @@
 account:
     username: bliblablubb_111
     password: bliblablubb
+    device: HuaweiP20MatePro
 
 settings:
     hashtag: celeryjuice
-    user: timsfits
+    user: magic_fox
     location: bempflingen
     n_pics: 5
     n_user: 50
     comment: True
-    wait: 1
     follow_days: 3
+    min_wait: 10
+    max_wait: 600
 
 comments:
     /Users/Jonas/Documents/Projekte/instagram/comments.txt
