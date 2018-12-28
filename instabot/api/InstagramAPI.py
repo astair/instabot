@@ -1057,3 +1057,15 @@ class InstagramAPI:
             except KeyError as e:
                 break
         return liked_items
+
+    def likePics(self, pics, logging, do_comment=True, comments=None,
+            wait=[10,600]):
+
+        for pic in pics:
+            media_id = pic["pk"]
+            self.like(media_id)
+            if do_comment:
+                comment = random.sample(comments, 1)[0]
+                logging.info(f"Commenting '{comment}'")
+                self.comment(media_id, comment)
+            time.sleep(random.randint(wait[0], wait[1]))

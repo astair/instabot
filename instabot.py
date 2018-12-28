@@ -94,14 +94,8 @@ if __name__ == "__main__":
 
                 logging.info(f"Liking first {n_pics} posts")
                 pics = API.LastJson["items"][:n_pics]
-                for pic in pics:
-                    media_id = pic["pk"]
-                    API.like(media_id)
-                    if comment:
-                        comment = random.sample(comments, 1)[0]
-                        logging.info(f"Commenting '{comment}'")
-                        API.comment(media_id, comment)
-                    time.sleep(random.randint(min_wait, max_wait))
+                API.likePics(pics, logging, do_comment=comment,
+                    comments=comments, wait=[min_wait, max_wait])
 
         if hashtag:
             if hashtag.startswith("#"):
@@ -114,14 +108,8 @@ if __name__ == "__main__":
 
             logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
-            for pic in pics:
-                media_id = pic["pk"]
-                API.like(media_id)
-                if comment:
-                    comment = random.sample(comments, 1)[0]
-                    logging.info(f"Commenting '{comment}'")
-                    API.comment(media_id, comment)
-                time.sleep(random.randint(min_wait, max_wait))
+            API.likePics(pics, logging, do_comment=comment, comments=comments,
+                wait=[min_wait, max_wait])
 
         if location:
 
@@ -138,14 +126,8 @@ if __name__ == "__main__":
 
             logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
-            for pic in pics:
-                media_id = pic["pk"]
-                API.like(media_id)
-                if comment:
-                    comment = random.sample(comments, 1)[0]
-                    logging.info(f"Commenting '{comment}'")
-                    API.comment(media_id, comment)
-                time.sleep(random.randint(min_wait, max_wait))
+            API.likePics(pics, logging, do_comment=comment, comments=comments,
+                wait=[min_wait, max_wait])
 
     if args.COMMAND == "like_back":
         if not user:
@@ -187,14 +169,8 @@ if __name__ == "__main__":
 
                 logging.info(f"Liking first {n_pics} posts")
                 pics = API.LastJson["items"][:n_pics]
-                for pic in pics:
-                    media_id = pic["pk"]
-                    API.like(media_id)
-                    if comment:
-                        comment = random.sample(comments, 1)[0]
-                        logging.info(f"Commenting '{comment}'")
-                        API.comment(media_id, comment)
-                    time.sleep(random.randint(min_wait, max_wait))
+                API.likePics(pics, logging, do_comment=comment,
+                    comments=comments, wait=[min_wait, max_wait])
 
     if args.COMMAND == "follow":
 
