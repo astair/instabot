@@ -30,6 +30,8 @@ try:
 except FileNotFoundError:
     long_description = DESCRIPTION
 
+os.makedir(os.path.join(HERE, "logs/"))
+
 setup(
     name = NAME,
     version = VERSION,
