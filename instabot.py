@@ -28,13 +28,39 @@ def interface():
     args = parser.parse_args()
     return args
 
-    def load_liked_pics():
-        try:
-            with open("logs/likes.log", "r") as f:
-                follow_log = yaml.load(f)
-        except FileNotFoundError as err:
-            follow_log = []
-        
+def likePics(self, pics, logging, do_comment=True, comments=None,
+        wait=[10,600], likes_log=set()):
+
+    for pic in pics:
+        media_id = pic["pk"]
+        if media_id in likes_log:
+            continue
+        else:
+            likes_log.add(media_id)
+        response = self.like(media_id)
+        if response:
+            with open("logs/likes.log", "at", encoding="utf8") as f:
+                f.write(str(media_id) + "\n")
+            if do_comment:
+                comment = random.sample(comments, 1)[0]
+                logging.info(f"Commenting '{comment}'")
+                self.comment(media_id, comment)
+            time.sleep(random.randint(wait[0], wait[1]))
+
+    return likes_log
+
+# Assign as method to API object
+InstagramAPI.likePics = likePics
+
+def load_liked_pics():
+    try:
+        with open("logs/likes.log", "rt", encoding="utf8") as f:
+            likes_log = f.readlines()
+        likes_log = set([int(c.strip()) for c in likes_log])
+    except FileNotFoundError as err:
+        likes_log = set()
+    return likes_log
+
 
 if __name__ == "__main__":
     args = interface()
@@ -56,12 +82,13 @@ if __name__ == "__main__":
 
     # Load comments
     comment = config["settings"]["comment"]
+    comments_file = config["comments"]
     try:
-        with open(config["comments"], "rt", encoding="utf8") as f:
+        with open(comments_file, "rt", encoding="utf8") as f:
             comments = f.readlines()
         comments = [c.strip() for c in comments]
     except FileNotFoundError:
-        logging.warning(f"{config["comments"]} was not found. Continuing        without comments.")
+        logging.warning(f"{comments_file} was not found. Continuing without comments.")
         comment = False
 
     logging.info("Logging into Instagram.")
@@ -82,6 +109,8 @@ if __name__ == "__main__":
     follow_days = config["settings"]["follow_days"]
 
     if args.COMMAND == "like":
+        likes_log = load_liked_pics()
+
         if user:
             logging.info(f"Searching for user {user}")
             response = API.searchUsername(user)
@@ -106,8 +135,9 @@ if __name__ == "__main__":
 
                 logging.info(f"Liking first {n_pics} posts")
                 pics = API.LastJson["items"][:n_pics]
-                API.likePics(pics, logging, do_comment=comment,
-                    comments=comments, wait=[min_wait, max_wait])
+                likes_log = API.likePics(pics, logging, do_comment=comment,
+                    comments=comments, wait=[min_wait, max_wait],
+                    likes_log=likes_log)
 
         if hashtag:
             if hashtag.startswith("#"):
@@ -120,8 +150,8 @@ if __name__ == "__main__":
 
             logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
-            API.likePics(pics, logging, do_comment=comment, comments=comments,
-                wait=[min_wait, max_wait])
+            likes_log = API.likePics(pics, logging, do_comment=comment, comments=comments,
+                wait=[min_wait, max_wait], likes_log=likes_log)
 
         if location:
 
@@ -138,10 +168,12 @@ if __name__ == "__main__":
 
             logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
-            API.likePics(pics, logging, do_comment=comment, comments=comments,
-                wait=[min_wait, max_wait])
+            likes_log = API.likePics(pics, logging, do_comment=comment, comments=comments,
+                wait=[min_wait, max_wait], likes_log=likes_log)
 
     if args.COMMAND == "like_back":
+        likes_log = load_liked_pics()
+
         if not user:
             user = acc_username
 
@@ -181,8 +213,9 @@ if __name__ == "__main__":
 
                 logging.info(f"Liking first {n_pics} posts")
                 pics = API.LastJson["items"][:n_pics]
-                API.likePics(pics, logging, do_comment=comment,
-                    comments=comments, wait=[min_wait, max_wait])
+                likes_log = API.likePics(pics, logging, do_comment=comment,
+                    comments=comments, wait=[min_wait, max_wait],
+                    likes_log=likes_log)
 
     if args.COMMAND == "follow":
 
