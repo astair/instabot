@@ -17,7 +17,8 @@ LICENSE = "GPL-3.0"
 # Python package requirements
 REQUIRED = [
     "InstagramAPI >= 1.0.2",
-    "ruamel.yaml >= 0.14.12"
+    "ruamel.yaml >= 0.14.12",
+    "pyyaml >= 3.13"
 ]
 
 # Read README.md for long description

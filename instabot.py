@@ -42,7 +42,7 @@ if __name__ == "__main__":
 
 
     # Load config
-    with open(args.CONFIG, "r") as f:
+    with open(args.CONFIG, "r", encoding="utf8") as f:
         try:
             config = yaml.load(f)
         except yaml.YAMLError as err:
