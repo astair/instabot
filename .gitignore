@@ -3,4 +3,6 @@ __pycache__
 .DS_Store*
 follow.log
 logs*
-*egg*
+*egg-info
+dist
+__init__.py
