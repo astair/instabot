@@ -15,7 +15,6 @@ import sys
 from datetime import datetime
 import calendar
 import os
-from requests_toolbelt import MultipartEncoder
 
 # Turn off InsecureRequestWarning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -25,6 +24,11 @@ try:
     from moviepy.editor import VideoFileClip
 except ImportError:
     print("Fail to import moviepy. Need only for Video upload.")
+
+try:
+    from requests_toolbelt import MultipartEncoder
+except ImportError:
+    print("Fail to import requests_toolbelt. Need only for Video and Photo upload.")
 
 
 # The urllib library was split into other modules from Python 2 to Python 3
