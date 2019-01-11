@@ -32,7 +32,7 @@ except FileNotFoundError:
 
 logs_dir = os.path.join(HERE, "logs/")
 if not os.path.exists(logs_dir):
-    os.makedir(logs_dir)
+    os.mkdir(logs_dir)
 
 setup(
     name = NAME,
