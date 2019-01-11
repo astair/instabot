@@ -16,7 +16,9 @@ LICENSE = "GPL-3.0"
 
 # Python package requirements
 REQUIRED = [
-    "pyyaml >= 3.13"
+    "pyyaml >= 3.13",
+    "requests==2.11.1",
+    "requests-toolbelt==0.7.0"
 ]
 
 # Read README.md for long description
