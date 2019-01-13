@@ -1062,6 +1062,20 @@ class InstagramAPI:
                 break
         return liked_items
 
+    def getAllFollowerIDs(self, username):
+        response = self.searchUsername(username)
+        user_id = self.LastJson["user"]["pk"]
+        self.getUserFollowings(user_id)
+        followers = [user["pk"] for user in self.LastJson["users"]]
+        return followers
+
+    def getAllPictureIDs(self, username):
+        response = self.searchUsername(username)
+        user_id = self.LastJson["user"]["pk"]
+        self.getUserFeed(user_id)
+        pics = self.LastJson["items"]
+        return pics
+
     def likePics(self, pics, logging, do_comment=True, comments=None,
             wait=[10,600], likes_log=set()):
 

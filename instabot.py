@@ -169,25 +169,13 @@ if __name__ == "__main__":
     if args.COMMAND == "like_back":
         likes_log = load_liked_pics(logging)
 
-        if not user:
-            user = acc_username
-
-        response = API.searchUsername(user)
-        user_id = API.LastJson["user"]["pk"]
-
-        logging.info("Listing followers")
-        API.getUserFollowings(user_id)
-        my_followers = [user["pk"] for user in API.LastJson["users"]]
-
-        API.searchUsername(username)
-        user_id = API.LastJson["user"]["pk"]
+        logging.info(f"Listing followers of {acc_username}")
+        my_followers = API.getAllFollowerIDs(acc_username)
 
         logging.info(f"Getting first {n_pics} posts")
-        API.getUserFeed(user_id)
-        pics = API.LastJson["items"][:n_pics]
+        pic_ids = API.getAllPictureIDs(acc_username)[:n_pics]
 
-        for pic in pics:
-            media_id = pic["pk"]
+        for media_id in pic_ids:
             API.getMediaLikers(media_id)
             likers = [user for user in API.LastJson["users"]
                 if user["pk"] not in my_followers]
