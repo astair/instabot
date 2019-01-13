@@ -1,18 +1,16 @@
 # Hi, I'm Samu's little instabot!
 
-## Functions
-
 This instabot understands four commands: like, like_back, follow and unfollow. In a config file (per default `config.yaml`) you can supply a number of options for these commands. Allow me to explain:
 
-### Like
+## Like
 
-#### Command
+### Command
 
 ```bash
 python instabot.py like
 ```
 
-#### Function
+### Function
 
 - Get followers of `user`
 - Like (and comment if `comment == True`) the first `n_pics` posts of of the first `n_user` followers
@@ -23,15 +21,15 @@ python instabot.py like
 - Writes log of all commented pictures in `logs/likes.log` and comments each pic only once
 
 
-### Like back
+## Like back
 
-#### Command
+### Command
 
 ```bash
 python instabot.py like_back
 ```
 
-#### Function
+### Function
 
 - Get followers of `username`
 - Get users that like the posts of `username`
@@ -40,30 +38,30 @@ python instabot.py like_back
 - Comments are randomly selected from the file `comments`
 - Writes log of all commented pictures in `logs/likes.log` and comments each pic only once
 
-### Follow
+## Follow
 
-#### Command
+### Command
 
 ```bash
 python instabot.py follow
 ```
 
-#### Function
+### Function
 
 - Get followers of `user`
 - Follow the fist `n_user` followers
 - Writes log of all followed users in `logs/follow.log`
 - Between each follow, wait between `min_wait` and `max_wait` seconds
 
-### Unfollow
+## Unfollow
 
-#### Command
+### Command
 
 ```bash
 python instabot.py unfollow
 ```
 
-#### Function
+### Function
 
 - Reads `logs/follow.log`
 - Unfollows all users followed longer than `follow_days` days ago
