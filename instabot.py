@@ -272,8 +272,7 @@ if __name__ == "__main__":
         for f in follow_log:
             now = datetime.now()
             delta = now - datetime.strptime(f[2], "%Y-%m-%d_%H:%M")
-            # if delta.days > follow_days:
-            if True:
+            if delta.days > follow_days:
                 logging.info(f"Unfollowing {f[1]}")
                 API.unfollow(f[0])
                 flog = read_follow_log(logging)
