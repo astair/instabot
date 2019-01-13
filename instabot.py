@@ -32,30 +32,6 @@ def interface():
     args = parser.parse_args()
     return args
 
-def likePics(self, pics, logging, do_comment=True, comments=None,
-        wait=[10,600], likes_log=set()):
-
-    for pic in pics:
-        media_id = pic["pk"]
-        if media_id in likes_log:
-            continue
-        else:
-            likes_log.add(media_id)
-        response = self.like(media_id)
-        if response:
-            with open("logs/likes.log", "at", encoding="utf8") as f:
-                f.write(str(media_id) + "\n")
-            if do_comment:
-                comment = random.sample(comments, 1)[0]
-                logging.info(f"Commenting '{comment}'")
-                self.comment(media_id, comment)
-            time.sleep(random.randint(wait[0], wait[1]))
-
-    return likes_log
-
-# Assign as method to API object
-InstagramAPI.likePics = likePics
-
 def load_liked_pics(logging):
     try:
         with open("logs/likes.log", "rt", encoding="utf8") as f:

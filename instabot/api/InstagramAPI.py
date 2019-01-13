@@ -16,7 +16,7 @@ from datetime import datetime
 import calendar
 import os
 
-# Turn off InsecureRequestWarning
+# Disable InsecureRequestWarning
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -1061,3 +1061,24 @@ class InstagramAPI:
             except KeyError as e:
                 break
         return liked_items
+
+    def likePics(self, pics, logging, do_comment=True, comments=None,
+            wait=[10,600], likes_log=set()):
+
+        for pic in pics:
+            media_id = pic["pk"]
+            if media_id in likes_log:
+                continue
+            else:
+                likes_log.add(media_id)
+            response = self.like(media_id)
+            if response:
+                with open("logs/likes.log", "at", encoding="utf8") as f:
+                    f.write(str(media_id) + "\n")
+                if do_comment:
+                    comment = random.sample(comments, 1)[0]
+                    logging.info(f"Commenting '{comment}'")
+                    self.comment(media_id, comment)
+                time.sleep(random.randint(wait[0], wait[1]))
+
+        return likes_log
