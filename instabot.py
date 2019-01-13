@@ -8,6 +8,10 @@ import argparse
 from datetime import datetime
 from instabot.api.InstagramAPI import InstagramAPI
 
+# CONST
+HERE = os.path.abspath(os.path.dirname(sys.argv[0]))
+os.chdir(HERE)
+
 # FUNC
 def interface():
     parser = argparse.ArgumentParser(description="Hi, I'm a little Instabot!")
