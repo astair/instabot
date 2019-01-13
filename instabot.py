@@ -86,7 +86,7 @@ if __name__ == "__main__":
         logging.warning(f"{comments_file} was not found. Continuing without comments.")
         comment = False
 
-    logging.info("Logging into Instagram.")
+    logging.info("Logging into Instagram")
     acc_username = config["account"]["username"]
     device = config["account"]["device"]
     API = InstagramAPI(acc_username, config["account"]["password"])
@@ -202,7 +202,9 @@ if __name__ == "__main__":
 
     if args.COMMAND == "follow":
         follow_log = read_follow_log(logging)
-        followed_ids = set([f[0] for f in follow_log])
+        logged_ids = set([f[0] for f in follow_log])
+        follower_ids = set(API.getAllFollowerIDs(acc_username))
+        follower_ids |= logged_ids
 
         if user:
             logging.info(f"Searching for user {user}")
@@ -216,7 +218,7 @@ if __name__ == "__main__":
             for fer in followers:
                 username = fer["username"]
                 user_id = fer["pk"]
-                if user_id in followed_ids:
+                if user_id in follower_ids:
                     continue
 
                 logging.info(f"Following {username}")
@@ -227,7 +229,8 @@ if __name__ == "__main__":
                     fout.write("\t".join((str(user_id), username, now)) + "\n")
 
                 follow_log = read_follow_log(logging)
-                followed_ids = set([f[0] for f in follow_log])
+                logged_ids = set([f[0] for f in follow_log])
+                follower_ids |= logged_ids
                 time.sleep(random.randint(min_wait, max_wait))
 
     if args.COMMAND == "unfollow":
