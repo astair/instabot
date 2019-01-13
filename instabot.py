@@ -56,16 +56,29 @@ def likePics(self, pics, logging, do_comment=True, comments=None,
 # Assign as method to API object
 InstagramAPI.likePics = likePics
 
-def load_liked_pics():
+def load_liked_pics(logging):
     try:
         with open("logs/likes.log", "rt", encoding="utf8") as f:
             likes_log = f.readlines()
         likes_log = set([int(c.strip()) for c in likes_log])
     except FileNotFoundError as err:
+        logging.info("No 'likes.log' found, making a new one")
         likes_log = set()
     return likes_log
 
+def read_follow_log(logging):
+    try:
+        with open("logs/follow.log", "rt", encoding="utf8") as f:
+            follow_log = f.readlines()
+        for i in range(len(follow_log)):
+            follow_log[i] = follow_log[i].strip().split("\t")
+            follow_log[i][0] = int(follow_log[i][0])
+    except FileNotFoundError as err:
+        logging.info("No 'follow.log' found, making a new one")
+        follow_log = list()
+    return follow_log
 
+# MAIN
 if __name__ == "__main__":
     args = interface()
 
@@ -76,6 +89,8 @@ if __name__ == "__main__":
         handlers = [
             logging.StreamHandler()
     ])
+    # Really don't need to hear about dropped connections
+    logging.getLogger("requests.packages.urllib3.connectionpool").setLevel(logging.WARNING)
 
     # Load config
     with open(args.CONFIG, "r", encoding="utf8") as f:
@@ -113,7 +128,7 @@ if __name__ == "__main__":
     follow_days = config["settings"]["follow_days"]
 
     if args.COMMAND == "like":
-        likes_log = load_liked_pics()
+        likes_log = load_liked_pics(logging)
 
         if user:
             logging.info(f"Searching for user {user}")
@@ -176,7 +191,7 @@ if __name__ == "__main__":
                 wait=[min_wait, max_wait], likes_log=likes_log)
 
     if args.COMMAND == "like_back":
-        likes_log = load_liked_pics()
+        likes_log = load_liked_pics(logging)
 
         if not user:
             user = acc_username
@@ -222,20 +237,8 @@ if __name__ == "__main__":
                     likes_log=likes_log)
 
     if args.COMMAND == "follow":
-
-        try:
-            with open("logs/follow.log", "r") as f:
-                follow_log = yaml.load(f)
-        except FileNotFoundError as err:
-            print(err)
-            follow_log = []
-        except yaml.YAMLError as err:
-            print(err)
-            follow_log = []
-        if not follow_log:
-            follow_log = []
-
-        now = datetime.now().strftime("%Y-%m-%d_%H:%M")
+        follow_log = read_follow_log(logging)
+        followed_ids = set([f[0] for f in follow_log])
 
         if user:
             logging.info(f"Searching for user {user}")
@@ -249,32 +252,35 @@ if __name__ == "__main__":
             for fer in followers:
                 username = fer["username"]
                 user_id = fer["pk"]
+                if user_id in followed_ids:
+                    continue
 
                 logging.info(f"Following {username}")
                 response = API.follow(user_id)
-                if response:
-                    follow_log.append((user_id, username, now))
-                time.sleep(random.randint(min_wait, max_wait))
 
-            with open("logs/follow.log", "w") as fout:
-                yaml.dump(follow_log, fout)
+                with open("logs/follow.log", "at", encoding="utf8") as fout:
+                    now = datetime.now().strftime("%Y-%m-%d_%H:%M")
+                    fout.write("\t".join((str(user_id), username, now)) + "\n")
+
+                follow_log = read_follow_log(logging)
+                followed_ids = set([f[0] for f in follow_log])
+                time.sleep(random.randint(min_wait, max_wait))
 
     if args.COMMAND == "unfollow":
+        follow_log = read_follow_log(logging)
 
-        with open("logs/follow.log", "r") as f:
-            follow_log = yaml.load(f)
-
-        now = datetime.now()
-
-        new_follow_log = []
         for f in follow_log:
+            now = datetime.now()
             delta = now - datetime.strptime(f[2], "%Y-%m-%d_%H:%M")
-            if delta.days > follow_days:
+            # if delta.days > follow_days:
+            if True:
                 logging.info(f"Unfollowing {f[1]}")
                 API.unfollow(f[0])
+                flog = read_follow_log(logging)
+                for fl in flog:
+                    if f[0] == fl[0]:
+                        flog.remove(fl)
+                with open("logs/follow.log", "wt", encoding="utf8") as fout:
+                    for fl in flog:
+                        fout.write("\t".join(map(str, fl)) + "\n")
                 time.sleep(random.randint(min_wait, max_wait))
-            else:
-                new_follow_log.append(f)
-
-        with open("logs/follow.log", "w") as fout:
-            yaml.dump(new_follow_log, fout)

@@ -4,15 +4,15 @@ account:
     device: HuaweiP20MatePro
 
 settings:
-    hashtag: celeryjuice
     user: timsfits
+    hashtag: celeryjuice
     location: bempflingen
     n_pics: 5
     n_user: 50
     comment: True
     follow_days: 3
-    min_wait: 10
-    max_wait: 600
+    min_wait: 5
+    max_wait: 10
 
 comments:
     /Users/Jonas/Documents/Projekte/instagram/comments.txt
