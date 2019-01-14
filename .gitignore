@@ -7,3 +7,4 @@ logs/*.*
 dist
 __init__.py
 build
+config.yaml
