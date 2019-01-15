@@ -14,7 +14,7 @@ os.chdir(HERE)
 
 # FUNC
 def interface():
-    parser = argparse.ArgumentParser(description="Hi, I'm a little Instabot!")
+    parser = argparse.ArgumentParser(description="Hi, I'm Hugo These little Instabot!")
 
     parser.add_argument("COMMAND",
                         type=str,

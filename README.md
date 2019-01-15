@@ -1,4 +1,4 @@
-# Hi, I'm Samu's little instabot!
+# Hi, I'm Hugo, Samu's little instabot!
 
 This instabot understands four commands: like, like_back, follow and unfollow. In a config file (per default `config.yaml`) you can supply a number of options for these commands. Allow me to explain:
 
