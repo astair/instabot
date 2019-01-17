@@ -86,13 +86,6 @@ if __name__ == "__main__":
         logging.warning(f"{comments_file} was not found. Continuing without comments.")
         comment = False
 
-    logging.info("Logging into Instagram")
-    acc_username = config["account"]["username"]
-    device = config["account"]["device"]
-    API = InstagramAPI(acc_username, config["account"]["password"])
-    API.setDevice(device)
-    API.login()
-
     # Some common parameters
     n_pics =  config["settings"]["n_pics"]
     n_user = config["settings"]["n_user"]
@@ -114,6 +107,13 @@ if __name__ == "__main__":
         likes_log = "logs/likes.log"
 
     # The actual BOT
+    logging.info("Logging into Instagram")
+    acc_username = config["account"]["username"]
+    device = config["account"]["device"]
+    API = InstagramAPI(acc_username, config["account"]["password"])
+    API.setDevice(device)
+    API.login()
+
     if args.COMMAND == "like":
         likes_log = load_liked_pics(logging, likes_log)
 
