@@ -109,9 +109,19 @@ if __name__ == "__main__":
     # The actual BOT
     logging.info("Logging into Instagram")
     acc_username = config["account"]["username"]
+    password = config["account"]["password"]
+    API = InstagramAPI(acc_username, password)
+    # Set device
     device = config["account"]["device"]
-    API = InstagramAPI(acc_username, config["account"]["password"])
     API.setDevice(device)
+    # Set proxy
+    try:
+        ip = config["proxy"]["ip"]
+        port = config["proxy"]["port"]
+        proxy = f"{acc_username}:{password}@{ip}:{port}"
+        API.setProxy(proxy)
+    except:
+        logging.warning("Proxy was not set, continuing without")
     API.login()
 
     if args.COMMAND == "like":

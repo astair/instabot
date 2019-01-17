@@ -82,6 +82,7 @@ class InstagramAPI:
         from instabot.api.devices import user_agents
         try:
             USER_AGENT = user_agents[device]
+            print('Device set!')
         except KeyError:
             device_list = '\n' + '\n'.join(user_agents.keys())
             print(f'{device} was not found in the list of user agents. \nAvailable devices are: {device_list}')
