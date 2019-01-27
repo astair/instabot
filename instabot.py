@@ -156,7 +156,6 @@ if __name__ == "__main__":
                 if not response:
                     continue
 
-                logging.info(f"Liking first {n_pics} posts")
                 pics = API.LastJson["items"][:n_pics]
                 likes_log = API.likePics(pics, logging, do_comment=comment,
                     comments=comments, wait=[min_wait, max_wait],
@@ -169,9 +168,6 @@ if __name__ == "__main__":
             logging.info(f"Searching for hashtag {hashtag}")
             response = API.getHashtagFeed(hashtag)
 
-            pics = API.LastJson["ranked_items"][:n_pics]
-
-            logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
             likes_log = API.likePics(pics, logging, do_comment=comment, comments=comments,
                 wait=[min_wait, max_wait], likes_log=likes_log)
@@ -186,10 +182,8 @@ if __name__ == "__main__":
             loc_id = loc["pk"]
             logging.info(f"{loc_name} found as first result")
             logging.info(f"Getting feed of {loc_name}")
-
             response = API.getLocationFeed(loc_id)
 
-            logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
             likes_log = API.likePics(pics, logging, do_comment=comment, comments=comments,
                 wait=[min_wait, max_wait], likes_log=likes_log)
