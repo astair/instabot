@@ -82,6 +82,7 @@ class InstagramAPI:
         from instabot.api.devices import user_agents
         try:
             USER_AGENT = user_agents[device]
+            print('Device set!')
         except KeyError:
             device_list = '\n' + '\n'.join(user_agents.keys())
             print(f'{device} was not found in the list of user agents. \nAvailable devices are: {device_list}')
@@ -1079,20 +1080,26 @@ class InstagramAPI:
     def likePics(self, pics, logging, do_comment=True, comments=None,
             wait=[10,600], likes_log=set()):
 
-        for pic in pics:
-            media_id = pic["pk"]
+        for n in range(len(pics)):
+            media_id = pics[n]["pk"]
             if media_id in likes_log:
                 continue
             else:
                 likes_log.add(media_id)
             response = self.like(media_id)
             if response:
+                logging.info(f"Liking picture #{n+1}")
                 with open("logs/likes.log", "at", encoding="utf8") as f:
                     f.write(str(media_id) + "\n")
                 if do_comment:
                     comment = random.sample(comments, 1)[0]
-                    logging.info(f"Commenting '{comment}'")
-                    self.comment(media_id, comment)
+                    response = self.comment(media_id, comment)
+                    if response:
+                        logging.info(f"Commenting '{comment}'")
+                    else:
+                        logging.info("Commenting not possible.")
                 time.sleep(random.randint(wait[0], wait[1]))
+            else:
+                logging.info("Liking not possible.")
 
         return likes_log

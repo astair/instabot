@@ -32,25 +32,25 @@ def interface():
     args = parser.parse_args()
     return args
 
-def load_liked_pics(logging):
+def load_liked_pics(logging, likes_log_file="logs/likes.log"):
     try:
-        with open("logs/likes.log", "rt", encoding="utf8") as f:
+        with open(likes_log_file, "rt", encoding="utf8") as f:
             likes_log = f.readlines()
         likes_log = set([int(c.strip()) for c in likes_log])
     except FileNotFoundError as err:
-        logging.info("No 'likes.log' found, making a new one")
+        logging.info(f"No '{likes_log_file}' found, making a new one")
         likes_log = set()
     return likes_log
 
-def read_follow_log(logging):
+def read_follow_log(logging, follow_log_file="logs/follow.log"):
     try:
-        with open("logs/follow.log", "rt", encoding="utf8") as f:
+        with open(follow_log_file, "rt", encoding="utf8") as f:
             follow_log = f.readlines()
         for i in range(len(follow_log)):
             follow_log[i] = follow_log[i].strip().split("\t")
             follow_log[i][0] = int(follow_log[i][0])
     except FileNotFoundError as err:
-        logging.info("No 'follow.log' found, making a new one")
+        logging.info(f"No '{likes_log_file}' found, making a new one")
         follow_log = list()
     return follow_log
 
@@ -84,14 +84,8 @@ if __name__ == "__main__":
         comments = [c.strip() for c in comments]
     except FileNotFoundError:
         logging.warning(f"{comments_file} was not found. Continuing without comments.")
+        comments = None
         comment = False
-
-    logging.info("Logging into Instagram")
-    acc_username = config["account"]["username"]
-    device = config["account"]["device"]
-    API = InstagramAPI(acc_username, config["account"]["password"])
-    API.setDevice(device)
-    API.login()
 
     # Some common parameters
     n_pics =  config["settings"]["n_pics"]
@@ -104,8 +98,42 @@ if __name__ == "__main__":
     follow_days = config["settings"]["follow_days"]
     follow_by = config["settings"]["follow_by"]
 
+    # Set log files
+    try:
+        follow_log_file = config["follow_log"]
+        if not os.path.isfile(follow_log_file):
+            logging.warning(f"No '{follow_log_file}' found, using logs/follow.log")
+            follow_log_file = "logs/follow.log"
+    except KeyError:
+        follow_log_file = "logs/follow.log"
+    try:
+        likes_log_file = config["likes_log"]
+        if not os.path.isfile(likes_log_file):
+            logging.warning(f"No '{likes_log_file}' found, using logs/likes.log")
+            likes_log_file = "logs/likes.log"
+    except KeyError:
+        likes_log_file = "logs/likes.log"
+
+    # The actual BOT
+    logging.info("Logging into Instagram")
+    acc_username = config["account"]["username"]
+    password = config["account"]["password"]
+    API = InstagramAPI(acc_username, password)
+    # Set device
+    device = config["account"]["device"]
+    API.setDevice(device)
+    # Set proxy
+    try:
+        ip = config["proxy"]["ip"]
+        port = config["proxy"]["port"]
+        proxy = f"{acc_username}:{password}@{ip}:{port}"
+        API.setProxy(proxy)
+    except:
+        logging.warning("Proxy was not set, continuing without")
+    API.login()
+
     if args.COMMAND == "like":
-        likes_log = load_liked_pics(logging)
+        likes_log = load_liked_pics(logging, likes_log_file)
 
         if user:
             logging.info(f"Searching for user {user}")
@@ -129,7 +157,6 @@ if __name__ == "__main__":
                 if not response:
                     continue
 
-                logging.info(f"Liking first {n_pics} posts")
                 pics = API.LastJson["items"][:n_pics]
                 likes_log = API.likePics(pics, logging, do_comment=comment,
                     comments=comments, wait=[min_wait, max_wait],
@@ -142,9 +169,6 @@ if __name__ == "__main__":
             logging.info(f"Searching for hashtag {hashtag}")
             response = API.getHashtagFeed(hashtag)
 
-            pics = API.LastJson["ranked_items"][:n_pics]
-
-            logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
             likes_log = API.likePics(pics, logging, do_comment=comment, comments=comments,
                 wait=[min_wait, max_wait], likes_log=likes_log)
@@ -159,16 +183,14 @@ if __name__ == "__main__":
             loc_id = loc["pk"]
             logging.info(f"{loc_name} found as first result")
             logging.info(f"Getting feed of {loc_name}")
-
             response = API.getLocationFeed(loc_id)
 
-            logging.info(f"Liking first {n_pics} posts")
             pics = API.LastJson["items"][:n_pics]
             likes_log = API.likePics(pics, logging, do_comment=comment, comments=comments,
                 wait=[min_wait, max_wait], likes_log=likes_log)
 
     if args.COMMAND == "like_back":
-        likes_log = load_liked_pics(logging)
+        likes_log = load_liked_pics(logging, likes_log_file)
 
         logging.info(f"Listing followers of {acc_username}")
         my_followers = API.getAllFollowerIDs(acc_username)
@@ -202,7 +224,7 @@ if __name__ == "__main__":
                     likes_log=likes_log)
 
     if args.COMMAND == "follow":
-        follow_log = read_follow_log(logging)
+        follow_log = read_follow_log(logging, follow_log_file)
         logged_ids = set([f[0] for f in follow_log])
         follower_ids = set(API.getAllFollowerIDs(acc_username))
         follower_ids |= logged_ids
@@ -232,17 +254,17 @@ if __name__ == "__main__":
                 logging.info(f"Following {username}")
                 response = API.follow(user_id)
 
-                with open("logs/follow.log", "at", encoding="utf8") as fout:
+                with open(follow_log_file, "at", encoding="utf8") as fout:
                     now = datetime.now().strftime("%Y-%m-%d_%H:%M")
                     fout.write("\t".join((str(user_id), username, now)) + "\n")
 
-                follow_log = read_follow_log(logging)
+                follow_log = read_follow_log(logging, follow_log_file)
                 logged_ids = set([f[0] for f in follow_log])
                 follower_ids |= logged_ids
                 time.sleep(random.randint(min_wait, max_wait))
 
     if args.COMMAND == "unfollow":
-        follow_log = read_follow_log(logging)
+        follow_log = read_follow_log(logging, follow_log_file)
 
         for f in follow_log:
             now = datetime.now()
@@ -250,11 +272,11 @@ if __name__ == "__main__":
             if delta.total_seconds() / (24 * 60 * 60) > follow_days:
                 logging.info(f"Unfollowing {f[1]}")
                 API.unfollow(f[0])
-                flog = read_follow_log(logging)
+                flog = read_follow_log(logging, follow_log_file)
                 for fl in flog:
                     if f[0] == fl[0]:
                         flog.remove(fl)
-                with open("logs/follow.log", "wt", encoding="utf8") as fout:
+                with open(follow_log_file, "wt", encoding="utf8") as fout:
                     for fl in flog:
                         fout.write("\t".join(map(str, fl)) + "\n")
                 time.sleep(random.randint(min_wait, max_wait))
