@@ -102,6 +102,7 @@ if __name__ == "__main__":
     min_wait = config["settings"]["min_wait"]
     max_wait = config["settings"]["max_wait"]
     follow_days = config["settings"]["follow_days"]
+    follow_by = config["settings"]["follow_by"]
 
     if args.COMMAND == "like":
         likes_log = load_liked_pics(logging)
@@ -211,11 +212,18 @@ if __name__ == "__main__":
             response = API.searchUsername(user)
             user_id = API.LastJson["user"]["pk"]
 
-            logging.info(f"Getting first {n_user} followers")
-            response = API.getUserFollowers(user_id)
-            followers = API.LastJson["users"][:n_user]
+            if follow_by == "liker":
+                logging.info(f"Getting first {n_user} likers of first picture.")
+                pic_id = API.getAllPictureIDs(user)[0]["pk"]
+                pic_likers = API.getMediaLikers(pic_id)
+                followers = API.LastJson["users"]
 
-            for fer in followers:
+            if follow_by == "follower":
+                logging.info(f"Getting first {n_user} followers")
+                response = API.getUserFollowers(user_id)
+                followers = API.LastJson["users"]
+
+            for fer in followers[:n_user]:
                 username = fer["username"]
                 user_id = fer["pk"]
                 if user_id in follower_ids:
