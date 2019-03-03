@@ -327,7 +327,9 @@ if __name__ == "__main__":
         if send_to == "all":
             logging.info("Messaging all followers:\n" + message)
             for f in current_followers:
+                logging.info(f)
                 API.direct_message(message, f)
+                time.sleep(random.randint(min_wait, max_wait))
 
         if send_to == "new":
             if not new_followers:
@@ -336,7 +338,9 @@ if __name__ == "__main__":
                 logging.info("Messaging new followers:\n" + message)
                 if new_followers:
                     for f in new_followers:
+                        logging.info(f)
                         API.direct_message(message, f)
+                        time.sleep(random.randint(min_wait, max_wait))
 
         with open(follower_log_file, "wt", encoding="utf8") as f:
             f.write("\n".join(list(current_followers)))
