@@ -18,7 +18,7 @@ def interface():
 
     parser.add_argument("COMMAND",
                         type=str,
-                        choices=["like", "like_back", "follow", "unfollow"],
+                        choices=["like", "like_back", "follow", "unfollow", "message"],
                         metavar="<COMMAND>",
                         help="A command for the Instabot.")
 
@@ -39,6 +39,16 @@ def load_liked_pics(logging, likes_log_file="logs/likes.log"):
         likes_log = set([int(c.strip()) for c in likes_log])
     except FileNotFoundError as err:
         logging.info(f"No '{likes_log_file}' found, making a new one")
+        likes_log = set()
+    return likes_log
+
+def load_followers(logging, follower_log_file="logs/follower.log"):
+    try:
+        with open(follower_log_file, "rt", encoding="utf8") as f:
+            follower_log = f.readlines()
+        follower_log = set([int(c.strip()) for c in follower_log])
+    except FileNotFoundError as err:
+        logging.info(f"No '{follower_log_file}' found, making a new one")
         likes_log = set()
     return likes_log
 
@@ -97,6 +107,7 @@ if __name__ == "__main__":
     max_wait = config["settings"]["max_wait"]
     follow_days = config["settings"]["follow_days"]
     follow_by = config["settings"]["follow_by"]
+    send_to = config["settings"]["send_to"]
 
     # Set log files
     try:
@@ -113,6 +124,13 @@ if __name__ == "__main__":
             likes_log_file = "logs/likes.log"
     except KeyError:
         likes_log_file = "logs/likes.log"
+    try:
+        follower_log_file = config["follower_log"]
+        if not os.path.isfile(follower_log_file):
+            logging.warning(f"No '{follower_log_file}' found, using logs/follower.log")
+            follower_log_file = "logs/follower.log"
+    except KeyError:
+        follower_log_file = "logs/follower.log"
 
     # The actual BOT
     logging.info("Logging into Instagram")
@@ -193,10 +211,10 @@ if __name__ == "__main__":
         likes_log = load_liked_pics(logging, likes_log_file)
 
         logging.info(f"Listing followers of {acc_username}")
-        my_followers = API.getAllFollowerIDs(acc_username)
+        my_followers = API.getAllFollowingIDs(acc_username)
 
         logging.info(f"Getting first {n_pics} posts")
-        pic_ids = API.getAllPictureIDs(acc_username)[:n_pics]
+        pic_ids = API.getAllPictures(acc_username)[:n_pics]
 
         for media_id in pic_ids:
             API.getMediaLikers(media_id)
@@ -226,7 +244,7 @@ if __name__ == "__main__":
     if args.COMMAND == "follow":
         follow_log = read_follow_log(logging, follow_log_file)
         logged_ids = set([f[0] for f in follow_log])
-        follower_ids = set(API.getAllFollowerIDs(acc_username))
+        follower_ids = set(API.getAllFollowingIDs(acc_username))
         follower_ids |= logged_ids
 
         if user:
@@ -236,7 +254,7 @@ if __name__ == "__main__":
 
             if follow_by == "liker":
                 logging.info(f"Getting first {n_user} likers of first picture.")
-                pic_id = API.getAllPictureIDs(user)[0]["pk"]
+                pic_id = API.getAllPictures(user)[0]["pk"]
                 pic_likers = API.getMediaLikers(pic_id)
                 followers = API.LastJson["users"]
 
@@ -280,3 +298,45 @@ if __name__ == "__main__":
                     for fl in flog:
                         fout.write("\t".join(map(str, fl)) + "\n")
                 time.sleep(random.randint(min_wait, max_wait))
+
+    if args.COMMAND == "message":
+        # Load message
+        message_file = config["message"]
+        try:
+            with open(message_file, "rt", encoding="utf8") as f:
+                message = f.read()
+        except FileNotFoundError as err:
+            logging.warning(f"{message_file} was not found.")
+            raise
+
+        # Load followers
+        try:
+            with open(follower_log_file, "rt", encoding="utf8") as f:
+                logged_followers = f.readlines()
+            logged_followers = set([c.strip() for c in logged_followers])
+            current_followers = {str(f) for f in API.getAllFollowerIDs(acc_username)}
+            print(list(current_followers))
+            new_followers = current_followers - logged_followers
+            print(list(new_followers))
+
+        except FileNotFoundError as err:
+            logging.info(f"No '{follower_log_file}' found, making a new one.")
+            current_followers = {str(f) for f in API.getAllFollowerIDs(acc_username)}
+            new_followers = {}
+
+        if send_to == "all":
+            logging.info("Messaging all followers:\n" + message)
+            for f in current_followers:
+                API.direct_message(message, f)
+
+        if send_to == "new":
+            if not new_followers:
+                logging.info("Sorry, there are no new followers.")
+            else:
+                logging.info("Messaging new followers:\n" + message)
+                if new_followers:
+                    for f in new_followers:
+                        API.direct_message(message, f)
+
+        with open(follower_log_file, "wt", encoding="utf8") as f:
+            f.write("\n".join(list(current_followers)))

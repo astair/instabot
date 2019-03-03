@@ -1063,14 +1063,21 @@ class InstagramAPI:
                 break
         return liked_items
 
-    def getAllFollowerIDs(self, username):
+    def getAllFollowingIDs(self, username):
         response = self.searchUsername(username)
         user_id = self.LastJson["user"]["pk"]
         self.getUserFollowings(user_id)
         followers = [user["pk"] for user in self.LastJson["users"]]
         return followers
 
-    def getAllPictureIDs(self, username):
+    def getAllFollowerIDs(self, username):
+        response = self.searchUsername(username)
+        user_id = self.LastJson["user"]["pk"]
+        self.getUserFollowers(user_id)
+        followers = [user["pk"] for user in self.LastJson["users"]]
+        return followers
+
+    def getAllPictures(self, username):
         response = self.searchUsername(username)
         user_id = self.LastJson["user"]["pk"]
         self.getUserFeed(user_id)

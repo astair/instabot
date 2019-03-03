@@ -9,3 +9,4 @@ __init__.py
 build
 config*.yaml
 comments.txt
+message.txt
