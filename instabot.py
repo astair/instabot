@@ -315,9 +315,7 @@ if __name__ == "__main__":
                 logged_followers = f.readlines()
             logged_followers = set([c.strip() for c in logged_followers])
             current_followers = {str(f) for f in API.getAllFollowerIDs(acc_username)}
-            print(list(current_followers))
             new_followers = current_followers - logged_followers
-            print(list(new_followers))
 
         except FileNotFoundError as err:
             logging.info(f"No '{follower_log_file}' found, making a new one.")
@@ -335,6 +333,8 @@ if __name__ == "__main__":
             if not new_followers:
                 logging.info("Sorry, there are no new followers.")
             else:
+                n_followers = len(new_followers)
+                logging.info(f"You have {n_followers} new followers.")
                 logging.info("Messaging new followers:\n" + message)
                 if new_followers:
                     for f in new_followers:
