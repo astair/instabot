@@ -131,6 +131,13 @@ if __name__ == "__main__":
             follower_log_file = "logs/follower.log"
     except KeyError:
         follower_log_file = "logs/follower.log"
+    try:
+        messaged_log_file = config["messaged_log"]
+        if not os.path.isfile(messaged_log_file):
+            logging.warning(f"No '{messaged_log_file}' found, using logs/messaged.log")
+            messaged_log_file = "logs/messaged.log"
+    except KeyError:
+        messaged_log_file = "logs/messaged.log"
 
     # The actual BOT
     logging.info("Logging into Instagram")
@@ -321,26 +328,47 @@ if __name__ == "__main__":
             logging.info(f"No '{follower_log_file}' found, making a new one.")
             current_followers = {str(f) for f in API.getAllFollowerIDs(acc_username)}
             new_followers = {}
-
-        if send_to == "all":
-            logging.info("Messaging all followers:\n" + message)
-            for f in current_followers:
-                logging.info(f)
-                API.direct_message(message, f)
-                time.sleep(random.randint(min_wait, max_wait))
-
-        if send_to == "new":
-            if not new_followers:
-                logging.info("Sorry, there are no new followers.")
-            else:
-                n_followers = len(new_followers)
-                logging.info(f"You have {n_followers} new followers.")
-                logging.info("Messaging new followers:\n" + message)
-                if new_followers:
-                    for f in new_followers:
-                        logging.info(f)
-                        API.direct_message(message, f)
-                        time.sleep(random.randint(min_wait, max_wait))
+            logged_followers = {}
 
         with open(follower_log_file, "wt", encoding="utf8") as f:
-            f.write("\n".join(list(current_followers)))
+            f.write("\n".join(list(current_followers | logged_followers)))
+
+        try:
+            with open(messaged_log_file, "r+", encoding="utf8") as f:
+                messaged_followers = set([c.strip() for c in f.readlines()])
+        except FileNotFoundError:
+            messaged_followers = {}
+
+        if send_to == "all":
+            with open(messaged_log_file, "a+", encoding="utf8") as mlog:
+                logging.info("Messaging all followers:\n" + message)
+                for f in current_followers:
+                    API.getUsernameInfo(f)
+                    f_name = API.LastJson["user"]["username"]
+                    if f not in messaged_followers:
+                        logging.info(f"Messaging {f_name}")
+                        API.direct_message(message, f)
+                        mlog.write(f + "\n")
+                        time.sleep(random.randint(min_wait, max_wait))
+                    else:
+                        logging.info(f"Already messaged {f_name}. Let's skip that one.")
+
+        if send_to == "new":
+            with open(messaged_log_file, "a+", encoding="utf8") as mlog:
+                if not new_followers:
+                    logging.info("Sorry, there are no new followers.")
+                else:
+                    n_followers = len(new_followers)
+                    logging.info(f"You have {n_followers} new followers.")
+                    logging.info("Messaging new followers:\n" + message)
+                    if new_followers:
+                        for f in new_followers:
+                            API.getUsernameInfo(f)
+                            f_name = API.LastJson["user"]["username"]
+                            if f not in messaged_followers:
+                                logging.info(f"Messaging {f_name}")
+                                API.direct_message(message, f)
+                                mlog.write(f + "\n")
+                                time.sleep(random.randint(min_wait, max_wait))
+                            else:
+                                logging.info(f"Already messaged {f_name}. Let's skip that one.")
